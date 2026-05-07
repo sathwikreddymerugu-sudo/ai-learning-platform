@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Prep - AI Learn</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+<nav class="border-b border-gray-800 px-6 py-4 flex justify-between items-center">
+  <a href="index.html" class="text-xl font-bold text-purple-400">🤖 AI Learn</a>
+  <span class="text-gray-400 text-sm">Exam Prep</span>
+</nav>
+<div class="max-w-2xl mx-auto px-6 py-12">
+  <h2 class="text-3xl font-bold mb-2">📚 Exam Prep</h2>
+  <p class="text-gray-400 mb-8">Generate important questions, formulas and revision notes</p>
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-6">
+    <div class="mb-4">
+      <label class="block text-sm text-gray-400 mb-2">Subject</label>
+      <input id="subject" type="text" placeholder="e.g. Mathematics, Physics, CS"
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"/>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm text-gray-400 mb-2">Topic</label>
+      <input id="topic" type="text" placeholder="e.g. Integration, Newton's Laws"
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"/>
+    </div>
+    <div class="mb-6">
+      <label class="block text-sm text-gray-400 mb-2">Exam Type</label>
+      <select id="examType" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+        <option value="semester">Semester Exam</option>
+        <option value="mid">Mid Exam</option>
+        <option value="viva">Viva</option>
+      </select>
+    </div>
+    <button onclick="generateExamPrep()"
+      class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition">
+      Generate Exam Prep ✨
+    </button>
+  </div>
+  <div id="loading" class="hidden text-center py-8">
+    <div class="text-purple-400 text-lg">🤖 AI is generating your exam prep...</div>
+  </div>
+  <div id="results" class="hidden space-y-4"></div>
+</div>
+<script>
+async function generateExamPrep() {
+  const subject = document.getElementById('subject').value;
+  const topic = document.getElementById('topic').value;
+  const examType = document.getElementById('examType').value;
+  if (!subject || !topic) { alert('Please fill in all fields!'); return; }
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+  try {
+    const response = await fetch('https://my-n8n-wad4.onrender.com/webhook/exam-prep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, topic, examType })
+    });
+    const data = await response.json();
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('results').classList.remove('hidden');
+    const results = document.getElementById('results');
+    results.innerHTML = `
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">📋 Important Questions</h3>
+        <ol class="space-y-2">
+          ${(data.data?.questions || []).map((q,i) => `<li class="text-gray-300"><span class="text-purple-400 font-semibold">${i+1}.</span> ${q}</li>`).join('')}
+        </ol>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">📐 Key Formulas</h3>
+        <ul class="space-y-2">
+          ${(data.data?.formulas || []).map(f => `<li class="text-gray-300">• ${f}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">📖 Quick Summary</h3>
+        <p class="text-gray-300">${data.data?.summary || 'Summary not available'}</p>
+      </div>
+    `;
+  } catch(e) {
+    document.getElementById('loading').classList.add('hidden');
+    alert('Error! Please try again.');
+  }
+}
+</script>
+</body>
+</html>
