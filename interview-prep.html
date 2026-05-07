@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Prep - AI Learn</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+<nav class="border-b border-gray-800 px-6 py-4 flex justify-between items-center">
+  <a href="index.html" class="text-xl font-bold text-purple-400">🤖 AI Learn</a>
+  <span class="text-gray-400 text-sm">Interview Prep</span>
+</nav>
+<div class="max-w-2xl mx-auto px-6 py-12">
+  <h2 class="text-3xl font-bold mb-2">💼 Interview Prep</h2>
+  <p class="text-gray-400 mb-8">Technical and HR questions for any role</p>
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-6">
+    <div class="mb-4">
+      <label class="block text-sm text-gray-400 mb-2">Role</label>
+      <input id="role" type="text" placeholder="e.g. Frontend Developer, Data Scientist"
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"/>
+    </div>
+    <div class="mb-6">
+      <label class="block text-sm text-gray-400 mb-2">Level</label>
+      <select id="level" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+        <option value="fresher">Fresher</option>
+        <option value="experienced">Experienced</option>
+      </select>
+    </div>
+    <button onclick="generateInterview()"
+      class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition">
+      Generate Interview Prep ✨
+    </button>
+  </div>
+  <div id="loading" class="hidden text-center py-8">
+    <div class="text-purple-400 text-lg">🤖 Preparing your interview guide...</div>
+  </div>
+  <div id="results" class="hidden space-y-4"></div>
+</div>
+<script>
+async function generateInterview() {
+  const role = document.getElementById('role').value;
+  const level = document.getElementById('level').value;
+  if (!role) { alert('Please enter a role!'); return; }
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+  try {
+    const response = await fetch('https://my-n8n-wad4.onrender.com/webhook/interview-prep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role, level })
+    });
+    const data = await response.json();
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('results').classList.remove('hidden');
+    document.getElementById('results').innerHTML = `
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">💻 Technical Questions</h3>
+        <ol class="space-y-3">
+          ${(data.data?.technicalQuestions || []).map((q,i) => `
+            <li class="text-gray-300">
+              <span class="text-purple-400 font-semibold">${i+1}.</span>
+              ${typeof q === 'object' ? q.question || JSON.stringify(q) : q}
+            </li>
+          `).join('')}
+        </ol>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">🤝 HR Questions</h3>
+        <ol class="space-y-2">
+          ${(data.data?.hrQuestions || []).map((q,i) => `
+            <li class="text-gray-300"><span class="text-purple-400 font-semibold">${i+1}.</span> ${q}</li>
+          `).join('')}
+        </ol>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">🤖 AI-Era Questions</h3>
+        <ol class="space-y-2">
+          ${(data.data?.aiEraQuestions || []).map((q,i) => `
+            <li class="text-gray-300"><span class="text-purple-400 font-semibold">${i+1}.</span> ${q}</li>
+          `).join('')}
+        </ol>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-purple-400 mb-4">📋 Preparation Strategy</h3>
+        <ol class="space-y-2">
+          ${(data.data?.preparationStrategy || []).map((s,i) => `
+            <li class="text-gray-300"><span class="text-purple-400 font-semibold">${i+1}.</span> ${s}</li>
+          `).join('')}
+        </ol>
+      </div>
+    `;
+  } catch(e) {
+    document.getElementById('loading').classList.add('hidden');
+    alert('Error! Please try again.');
+  }
+}
+</script>
+</body>
+</html>
